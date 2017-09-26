@@ -1,4 +1,4 @@
-extern crate ron;
+extern crate rson_rs as rson;
 #[macro_use]
 extern crate serde_derive;
 
@@ -43,11 +43,11 @@ fn roundtrip() {
         ].into_iter().collect()
     };
 
-    let serial = ron::ser::to_string(&value).unwrap();
+    let serial = rson::ser::to_string(&value).unwrap();
 
     println!("Serialized: {}", serial);
 
-    let deserial = ron::de::from_str(&serial);
+    let deserial = rson::de::from_str(&serial);
 
     assert_eq!(Ok(value), deserial);
 }

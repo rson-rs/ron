@@ -4,7 +4,7 @@ use super::{Pretty, Result, Serializer};
 
 use serde::ser::Serialize;
 
-/// Serializes `value` in the recommended RON layout.
+/// Serializes `value` in the recommended RSON layout.
 pub fn to_string<T>(value: &T) -> Result<String>
     where T: Serialize
 {

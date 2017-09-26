@@ -1,5 +1,5 @@
 /*!
-RON is a simple config format which looks similar to Rust syntax.
+RSON is a simple config format which looks similar to Rust syntax.
 
 ## Features
 
@@ -21,7 +21,7 @@ RON is a simple config format which looks similar to Rust syntax.
 
 ```rust,ignore
 Game(
-    title: "Hello, RON!",
+    title: "Hello, RSON!",
     level: Level( // We could just leave the `Level` out
         buildings: [
             (
@@ -50,7 +50,7 @@ Just add it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ron = "*"
+rson_rs = "*"
 ```
 
 Serializing / Deserializing is as simple as calling `to_string` / `from_str`.

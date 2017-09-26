@@ -65,7 +65,7 @@ struct Pretty {
     indent: usize,
 }
 
-/// The RON serializer.
+/// The RSON serializer.
 ///
 /// You can just use `to_string` for deserializing a value.
 /// If you want it pretty-printed, take a look at the `pretty` module.

@@ -1,21 +1,22 @@
 [package]
-name = "ron"
-version = "0.1.1"
+name = "rson"
+version = "0.1.2"
 license = "MIT/Apache-2.0"
 keywords = ["parser", "serde", "serialization"]
 authors = [
 	"Dzmitry Malyshau <kvarkus@gmail.com>",
 	"Thomas Schaller <torkleyy@gmail.com>",
+	"Alexander Mescheryakov <freecoder.xx@gmail.com>",
 ]
-description = "Rusty Object Notation"
+description = "Rust Object Notation"
 categories = ["encoding"]
-homepage = "https://github.com/ron-rs/ron"
-repository = "https://github.com/ron-rs/ron"
-documentation = "https://docs.rs/ron/"
+homepage = "https://github.com/rson-rs/rson"
+repository = "https://github.com/rson-rs/rson"
+documentation = "https://docs.rs/rson/"
 exclude = ["bors.toml", ".travis.yml"]
 
 [lib]
-name = "ron"
+name = "rson_rs"
 
 [dependencies]
 serde = "1"

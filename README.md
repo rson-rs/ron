@@ -1,13 +1,14 @@
-## Rusty Object Notation
+## Rust Object Notation
 
-[![Build Status](https://travis-ci.org/ron-rs/ron.png?branch=master)](https://travis-ci.org/ron-rs/ron)
-[![Crates.io](https://img.shields.io/crates/v/ron.svg)](https://crates.io/crates/ron)
-[![Docs](https://docs.rs/ron/badge.svg)](https://docs.rs/ron)
-[![Gitter](https://badges.gitter.im/ron-rs/ron.svg)](https://gitter.im/ron-rs/ron)
+[![Build Status](https://travis-ci.org/rson-rs/rson.png?branch=master)](https://travis-ci.org/rson-rs/rson)
+[![Crates.io](https://img.shields.io/crates/v/rson.svg)](https://crates.io/crates/rson_rs)
+[![Docs](https://docs.rs/rson/badge.svg)](https://docs.rs/rson)
+[![Gitter](https://badges.gitter.im/rson-rs/rson.svg)](https://gitter.im/rson-rs/rson)
 
-RON is a simple readable data serialization format that looks similar to Rust syntax.
+RSON is a simple readable data serialization format that looks similar to Rust syntax.
 It's designed to support all of [Serde's data model](https://serde.rs/data-model.html), so
-structs, enums, tuples, arrays, generic maps, and primitive values.
+structs, enums, tuples, arrays, generic maps, and primitive values. RSON is a fork of
+[RON](https://github.com/ron-rs/ron) library, but provides a more appropriate Rust-lang syntax. 
 
 ### Example in JSON
 
@@ -45,6 +46,35 @@ Notice these issues:
   2. No trailing comma allowed
   3. No comments allowed
 
+### Same example in RSON
+
+```rust
+Scene { // class name is optional
+    materials: [ // this is a map
+        "metal" => {
+            reflectivity: 1.0,
+        },
+        "plastic" => {
+            reflectivity: 0.5,
+        },
+    ],
+    entities: [ // this is an array
+        {
+            name: "hero",
+            material: "metal",
+        },
+        {
+            name: "monster",
+            material: "plastic",
+        },
+    ],
+}
+```
+
+The RSON format uses `{`..`}` brackets for *heterogeneous* structures (classes), while
+preserving the `(`..`)` for tuples, and `[`..`]` for *homogeneous* structures (arrays and maps).
+This distinction allows to solve the biggest problem with JSON.
+
 ### Same example in RON
 
 ```rust
@@ -70,9 +100,10 @@ Scene( // class name is optional
 )
 ```
 
-The new format uses `(`..`)` brackets for *heterogeneous* structures (classes),
+Unlike RSON, the RON format uses `(`..`)` brackets for *heterogeneous* structures (classes),
 while preserving the `{`..`}` for maps, and `[`..`]` for *homogeneous* structures (arrays).
-This distinction allows to solve the biggest problem with JSON.
+
+### RSON heterogeneous structure syntax examples
 
 Here are the general rules to parse the heterogeneous structures:
 
@@ -81,12 +112,12 @@ Here are the general rules to parse the heterogeneous structures:
 | no              | no                | tuple                     | `(a, b)`            |
 | yes/no          | no                | tuple struct              | `Name(a, b)`        |
 | yes             | no                | enum value                | `Variant(a, b)`     |
-| yes/no          | yes               | struct                    | `(f1: a, f2: b,)`   |
+| yes/no          | yes               | struct                    | `{f1: a, f2: b,}`   |
 
 ### Specification
 
 There is a very basic, work in progress specification available on
-[the wiki page](https://github.com/kvark/ron/wiki/Specification).
+[the wiki page](https://github.com/rson-rs/rson/wiki/Specification).
 
 ### Appendix
 
@@ -102,10 +133,14 @@ Why not TOML?
   - alien syntax
   - absolute paths are not scalable
 
+Why not RON?
+  - non-traditional syntax for classes
+  - confuse map syntax
+
 Why not XXX?
   - if you know a better format, tell me!
 
 ## License
 
-RON is dual-licensed under Apache-2.0 and MIT.
+RSON is dual-licensed under Apache-2.0 and MIT.
 
