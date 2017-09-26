@@ -7,7 +7,11 @@ use std::borrow::Cow;
 use std::io;
 use std::str;
 
-use serde::de;
+use serde::de::{
+    Deserialize, DeserializeOwned, DeserializeSeed,
+    EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor
+};
+use serde::Deserializer as SerdeDeserializer;
 
 use parse::Bytes;
 use self::id::IdDeserializer;
@@ -53,7 +57,7 @@ impl<'de> Deserializer<'de>
 /// and feeding into a deserializer
 pub fn from_reader<R, T>(mut rdr: R) -> Result<T>
     where R: io::Read,
-          T: de::DeserializeOwned
+          T: DeserializeOwned
 {
     let mut bytes = Vec::new();
     rdr.read_to_end(&mut bytes)?;
@@ -64,7 +68,7 @@ pub fn from_reader<R, T>(mut rdr: R) -> Result<T>
 /// A convenience function for building a deserializer
 /// and deserializing a value of type `T`.
 pub fn from_str<'a, T>(s: &'a str) -> Result<T>
-    where T: de::Deserialize<'a>
+    where T: Deserialize<'a>
 {
     let mut deserializer = Deserializer::from_str(s);
     let t = T::deserialize(&mut deserializer)?;
@@ -90,12 +94,12 @@ impl<'de> Deserializer<'de>
     }
 }
 
-impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
+impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
 {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume_ident("true") {
             return visitor.visit_bool(true);
@@ -127,79 +131,79 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_bool(self.bytes.bool()?)
     }
 
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_i8(self.bytes.signed_integer()?)
     }
 
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_i8(self.bytes.signed_integer()?)
     }
 
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_i32(self.bytes.signed_integer()?)
     }
 
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_i64(self.bytes.signed_integer()?)
     }
 
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_u8(self.bytes.unsigned_integer()?)
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_u16(self.bytes.unsigned_integer()?)
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_u32(self.bytes.unsigned_integer()?)
     }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_u64(self.bytes.unsigned_integer()?)
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_f32(self.bytes.float()?)
     }
 
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_f64(self.bytes.float()?)
     }
 
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_char(self.bytes.char()?)
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         use parse::ParsedStr;
 
@@ -210,25 +214,25 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.deserialize_str(visitor)
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.deserialize_seq(visitor)
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.deserialize_seq(visitor)
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume("Some") && { self.bytes.skip_ws(); self.bytes.consume("(") } {
             self.bytes.skip_ws();
@@ -252,7 +256,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
 
     // In Serde, unit means an anonymous value containing no data.
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume("()") {
             visitor.visit_unit()
@@ -266,7 +270,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         name: &'static str,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume(name) {
             visitor.visit_unit()
@@ -280,7 +284,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         name: &'static str,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.bytes.consume(name);
 
@@ -301,7 +305,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
     }
 
     fn deserialize_seq<V>(mut self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume("[") {
             let value = visitor.visit_seq(CommaSeparated::new(b']', &mut self))?;
@@ -328,7 +332,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         _len: usize,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume("(") {
             let value = visitor.visit_seq(CommaSeparated::new(b')', &mut self))?;
@@ -350,14 +354,14 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         len: usize,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.bytes.consume(name);
         self.deserialize_tuple(len, visitor)
     }
 
     fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         if self.bytes.consume("{") {
             let value = visitor.visit_map(CommaSeparated::new(b'}', &mut self))?;
@@ -379,7 +383,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         _fields: &'static [&'static str],
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.bytes.consume(name);
 
@@ -405,7 +409,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         _variants: &'static [&'static str],
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_enum(Enum::new(self))
     }
@@ -414,7 +418,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         self,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         visitor.visit_bytes(self.bytes.identifier()?)
     }
@@ -423,7 +427,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de>
         self,
         visitor: V
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.deserialize_any(visitor)
     }
@@ -457,12 +461,12 @@ impl<'a, 'de> CommaSeparated<'a, 'de>
     }
 }
 
-impl<'de, 'a> de::SeqAccess<'de> for CommaSeparated<'a, 'de>
+impl<'de, 'a> SeqAccess<'de> for CommaSeparated<'a, 'de>
 {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
-        where T: de::DeserializeSeed<'de>
+        where T: DeserializeSeed<'de>
     {
         if self.has_element()? {
             let res = seed.deserialize(&mut *self.de)?;
@@ -476,12 +480,12 @@ impl<'de, 'a> de::SeqAccess<'de> for CommaSeparated<'a, 'de>
     }
 }
 
-impl<'de, 'a> de::MapAccess<'de> for CommaSeparated<'a, 'de>
+impl<'de, 'a> MapAccess<'de> for CommaSeparated<'a, 'de>
 {
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
-        where K: de::DeserializeSeed<'de>
+        where K: DeserializeSeed<'de>
     {
         if self.has_element()? {
             if self.terminator == b')' {
@@ -495,7 +499,7 @@ impl<'de, 'a> de::MapAccess<'de> for CommaSeparated<'a, 'de>
     }
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value>
-        where V: de::DeserializeSeed<'de>
+        where V: DeserializeSeed<'de>
     {
         self.de.bytes.skip_ws();
 
@@ -526,13 +530,13 @@ impl<'a, 'de> Enum<'a, 'de>
     }
 }
 
-impl<'de, 'a> de::EnumAccess<'de> for Enum<'a, 'de>
+impl<'de, 'a> EnumAccess<'de> for Enum<'a, 'de>
 {
     type Error = Error;
     type Variant = Self;
 
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
-        where V: de::DeserializeSeed<'de>
+        where V: DeserializeSeed<'de>
     {
         let value = seed.deserialize(&mut *self.de)?;
 
@@ -540,7 +544,7 @@ impl<'de, 'a> de::EnumAccess<'de> for Enum<'a, 'de>
     }
 }
 
-impl<'de, 'a> de::VariantAccess<'de> for Enum<'a, 'de>
+impl<'de, 'a> VariantAccess<'de> for Enum<'a, 'de>
 {
     type Error = Error;
 
@@ -550,7 +554,7 @@ impl<'de, 'a> de::VariantAccess<'de> for Enum<'a, 'de>
     }
 
     fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
-        where T: de::DeserializeSeed<'de>
+        where T: DeserializeSeed<'de>
     {
         self.de.bytes.skip_ws();
         
@@ -570,7 +574,7 @@ impl<'de, 'a> de::VariantAccess<'de> for Enum<'a, 'de>
     }
 
     fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.de.bytes.skip_ws();
 
@@ -582,7 +586,7 @@ impl<'de, 'a> de::VariantAccess<'de> for Enum<'a, 'de>
         fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
-        where V: de::Visitor<'de>
+        where V: Visitor<'de>
     {
         self.de.bytes.skip_ws();
 
