@@ -50,16 +50,16 @@ Notice these issues:
 
 ```rust
 Scene { // class name is optional
-    materials: [ // this is a map
-        "metal" => {
+    materials: { // this is a map
+        "metal": {
             reflectivity: 1.0,
         },
-        "plastic" => {
+        "plastic": {
             reflectivity: 0.5,
         },
-    ],
+    },
     entities: [ // this is an array
-        {
+        { // this is a class
             name: "hero",
             material: "metal",
         },
@@ -71,9 +71,11 @@ Scene { // class name is optional
 }
 ```
 
-The RSON format uses `{`..`}` brackets for *heterogeneous* structures (classes), while
-preserving the `(`..`)` for tuples, and `[`..`]` for *homogeneous* structures (arrays and maps).
-This distinction allows to solve the biggest problem with JSON.
+The RSON format uses `{`..`}` brackets for *heterogeneous* structures (classes) and
+*homogeneous* maps, where classes are different from maps by keys: in classes those
+are identifiers, but in maps those are values. Additionally, it uses `(`..`)` brackets
+for heterogeneous tuples, and `[`..`]` for homogeneous arrays. This distinction allows
+to solve the biggest problem with JSON.
 
 ### Same example in RON
 
@@ -100,10 +102,11 @@ Scene( // class name is optional
 )
 ```
 
-Unlike RSON, the RON format uses `(`..`)` brackets for *heterogeneous* structures (classes),
-while preserving the `{`..`}` for maps, and `[`..`]` for *homogeneous* structures (arrays).
+Unlike RSON, the RON format uses `(`..`)` brackets for all *heterogeneous* structures (classes
+and tuples), while preserving the `{`..`}` for maps, and `[`..`]` for *homogeneous* arrays. This
+is non-traditional syntax for classes of both the JSON and the native Rust representation.
 
-### RSON heterogeneous structure syntax examples
+### RSON heterogeneous structure syntax
 
 Here are the general rules to parse the heterogeneous structures:
 
@@ -135,7 +138,7 @@ Why not TOML?
 
 Why not RON?
   - non-traditional syntax for classes
-  - confuse map syntax
+  - confuse between class and map syntax
 
 Why not XXX?
   - if you know a better format, tell me!
