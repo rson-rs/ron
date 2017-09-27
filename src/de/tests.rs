@@ -20,7 +20,7 @@ enum MyEnum {
 #[test]
 fn test_empty_struct() {
     assert_eq!(Ok(EmptyStruct1), from_str("EmptyStruct1"));
-    assert_eq!(Ok(EmptyStruct2 {}), from_str("EmptyStruct2()"));
+    assert_eq!(Ok(EmptyStruct2 {}), from_str("EmptyStruct2 {}"));
 }
 
 
@@ -28,8 +28,8 @@ fn test_empty_struct() {
 fn test_struct() {
     let my_struct = MyStruct { x: 4.0, y: 7.0 };
 
-    assert_eq!(Ok(my_struct), from_str("MyStruct(x:4,y:7,)"));
-    assert_eq!(Ok(my_struct), from_str("(x:4,y:7)"));
+    assert_eq!(Ok(my_struct), from_str("MyStruct {x:4,y:7,}"));
+    assert_eq!(Ok(my_struct), from_str("{x:4,y:7}"));
 
     #[derive(Debug, PartialEq, Deserialize)]
     struct NewType(i32);
@@ -56,7 +56,7 @@ fn test_enum() {
     assert_eq!(Ok(MyEnum::A), from_str("A"));
     assert_eq!(Ok(MyEnum::B(true)), from_str("B(true,)"));
     assert_eq!(Ok(MyEnum::C(true, 3.5)), from_str("C(true,3.5,)"));
-    assert_eq!(Ok(MyEnum::D { a: 2, b: 3 }), from_str("D(a:2,b:3,)"));
+    assert_eq!(Ok(MyEnum::D { a: 2, b: 3 }), from_str("D{a:2,b:3,}"));
 }
 
 #[test]
@@ -108,12 +108,12 @@ fn test_escape() {
 
 #[test]
 fn test_comment() {
-    assert_eq!(MyStruct { x: 1.0, y: 2.0 }, from_str("(
+    assert_eq!(MyStruct { x: 1.0, y: 2.0 }, from_str("{
 x: 1.0, // x is just 1
 // There is another comment in the very next line..
 // And y is indeed
 y: 2.0 // 2!
-    )").unwrap());
+    }").unwrap());
 }
 
 fn err<T>(kind: ParseError, line: usize, col: usize) -> Result<T> {
@@ -137,14 +137,14 @@ fn test_err_wrong_value() {
     assert_eq!(from_str::<(u8, bool)>("'c'"), err(ExpectedArray, 1, 1));
     assert_eq!(from_str::<bool>("notabool"), err(ExpectedBoolean, 1, 1));
 
-    assert_eq!(from_str::<MyStruct>("MyStruct(\n    x: true)"), err(ExpectedFloat, 2, 8));
-    assert_eq!(from_str::<MyStruct>("MyStruct(\n    x: 3.5, \n    y:)"),
+    assert_eq!(from_str::<MyStruct>("MyStruct{\n    x: true}"), err(ExpectedFloat, 2, 8));
+    assert_eq!(from_str::<MyStruct>("MyStruct{\n    x: 3.5, \n    y:}"),
                err(ExpectedFloat, 3, 7));
 }
 
 #[test]
 fn test_perm_ws() {
-    assert_eq!(from_str::<MyStruct>("\nMyStruct  \t ( \n x   : 3.5 , \t y\n: 4.5 \n ) \t\n"),
+    assert_eq!(from_str::<MyStruct>("\nMyStruct  \t { \n x   : 3.5 , \t y\n: 4.5 \n } \t\n"),
                 Ok(MyStruct { x: 3.5, y: 4.5 }));
 }
 

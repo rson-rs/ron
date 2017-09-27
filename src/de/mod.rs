@@ -51,6 +51,19 @@ impl<'de> Deserializer<'de>
     {
         String::from_utf8_lossy(&self.bytes.bytes())
     }
+
+    /// Check if the remaining bytes are whitespace only,
+    /// otherwise return an error.
+    pub fn end(&mut self) -> Result<()>
+    {
+        self.bytes.skip_ws();
+
+        if self.bytes.bytes().is_empty() {
+            Ok(())
+        } else {
+            self.bytes.err(ParseError::TrailingCharacters)
+        }
+    }
 }
 
 /// A convenience function for reading data from a reader
@@ -76,22 +89,6 @@ pub fn from_str<'a, T>(s: &'a str) -> Result<T>
     deserializer.end()?;
 
     Ok(t)
-}
-
-impl<'de> Deserializer<'de>
-{
-    /// Check if the remaining bytes are whitespace only,
-    /// otherwise return an error.
-    pub fn end(&mut self) -> Result<()>
-    {
-        self.bytes.skip_ws();
-
-        if self.bytes.bytes().is_empty() {
-            Ok(())
-        } else {
-            self.bytes.err(ParseError::TrailingCharacters)
-        }
-    }
 }
 
 impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
@@ -120,9 +117,9 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
         }
 
         match self.bytes.peek_or_eof()? {
-            b'(' => self.deserialize_struct("", &[], visitor),
-            b'[' => self.deserialize_seq(visitor),
             b'{' => self.deserialize_map(visitor),
+            b'(' => self.deserialize_tuple(0, visitor),
+            b'[' => self.deserialize_seq(visitor),
             b'0' ... b'9' | b'+' | b'-' | b'.' => self.deserialize_f64(visitor),
             b'"' => self.deserialize_string(visitor),
             b'\'' => self.deserialize_char(visitor),
@@ -308,7 +305,7 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
         where V: Visitor<'de>
     {
         if self.bytes.consume("[") {
-            let value = visitor.visit_seq(CommaSeparated::new(b']', &mut self))?;
+            let value = visitor.visit_seq(CommaSeparated::new(b']', &mut self, 0))?;
             self.bytes.comma();
 
             if self.bytes.consume("]") {
@@ -335,7 +332,7 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
         where V: Visitor<'de>
     {
         if self.bytes.consume("(") {
-            let value = visitor.visit_seq(CommaSeparated::new(b')', &mut self))?;
+            let value = visitor.visit_seq(CommaSeparated::new(b')', &mut self, 0))?;
             self.bytes.comma();
 
             if self.bytes.consume(")") {
@@ -364,7 +361,7 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
         where V: Visitor<'de>
     {
         if self.bytes.consume("{") {
-            let value = visitor.visit_map(CommaSeparated::new(b'}', &mut self))?;
+            let value = visitor.visit_map(CommaSeparated::new(b'}', &mut self, 0))?;
             self.bytes.comma();
 
             if self.bytes.consume("}") {
@@ -389,11 +386,11 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
 
         self.bytes.skip_ws();
 
-        if self.bytes.consume("(") {
-            let value = visitor.visit_map(CommaSeparated::new(b')', &mut self))?;
+        if self.bytes.consume("{") {
+            let value = visitor.visit_map(CommaSeparated::new(b'}', &mut self, Flags::IS_STRUCT))?;
             self.bytes.comma();
 
-            if self.bytes.consume(")") {
+            if self.bytes.consume("}") {
                 Ok(value)
             } else {
                 self.bytes.err(ParseError::ExpectedStructEnd)
@@ -433,18 +430,49 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
     }
 }
 
+type Flags = u8;
+
+trait CommaSeparatedFlag
+{
+    const IS_MAP: u8 = 0b00000001;
+    const IS_STRUCT: u8 = 0b00000010;
+    const HAD_COMMA: u8 = 0b00000100;
+
+    fn is_map(&self) -> bool;
+    fn is_struct(&self) -> bool;
+    fn had_comma(&self) -> bool;
+}
+
+impl CommaSeparatedFlag for Flags
+{
+    fn is_map(&self) -> bool
+    {
+        self & Self::IS_MAP > 0
+    }
+
+    fn is_struct(&self) -> bool
+    {
+        self & Self::IS_STRUCT > 0
+    }
+
+    fn had_comma(&self) -> bool
+    {
+        self & Self::HAD_COMMA > 0
+    }
+}
+
 struct CommaSeparated<'a, 'de: 'a>
 {
     de: &'a mut Deserializer<'de>,
     terminator: u8,
-    had_comma: bool,
+    flags: Flags,
 }
 
 impl<'a, 'de> CommaSeparated<'a, 'de>
 {
-    fn new(terminator: u8, de: &'a mut Deserializer<'de>) -> Self
+    fn new(terminator: u8, de: &'a mut Deserializer<'de>, flags: u8) -> Self
     {
-        CommaSeparated { de, terminator, had_comma: true }
+        CommaSeparated { de, terminator, flags: flags | Flags::HAD_COMMA }
     }
 
     fn err<T>(&self, kind: ParseError) -> Result<T>
@@ -456,7 +484,7 @@ impl<'a, 'de> CommaSeparated<'a, 'de>
     {
         self.de.bytes.skip_ws();
 
-        Ok(self.had_comma &&
+        Ok(self.flags.had_comma() &&
            self.de.bytes.peek_or_eof()? != self.terminator)
     }
 }
@@ -471,7 +499,7 @@ impl<'de, 'a> SeqAccess<'de> for CommaSeparated<'a, 'de>
         if self.has_element()? {
             let res = seed.deserialize(&mut *self.de)?;
 
-            self.had_comma = self.de.bytes.comma();
+            self.flags |= if self.de.bytes.comma() { Flags::HAD_COMMA } else { 0 };
 
             Ok(Some(res))
         } else {
@@ -488,7 +516,14 @@ impl<'de, 'a> MapAccess<'de> for CommaSeparated<'a, 'de>
         where K: DeserializeSeed<'de>
     {
         if self.has_element()? {
-            if self.terminator == b')' {
+            if !self.flags.is_map() && !self.flags.is_struct() {
+                if self.de.bytes.is_identifier()? {
+                    self.flags |= Flags::IS_STRUCT;
+                } else {
+                    self.flags |= Flags::IS_MAP;
+                }
+            }
+            if self.flags.is_struct() {
                 seed.deserialize(&mut IdDeserializer::new(&mut *self.de)).map(Some)
             } else {
                 seed.deserialize(&mut *self.de).map(Some)
@@ -508,7 +543,7 @@ impl<'de, 'a> MapAccess<'de> for CommaSeparated<'a, 'de>
 
             let res = seed.deserialize(&mut *self.de)?;
 
-            self.had_comma = self.de.bytes.comma();
+            self.flags |= if self.de.bytes.comma() { Flags::HAD_COMMA } else { 0 };
 
             Ok(res)
         } else {
