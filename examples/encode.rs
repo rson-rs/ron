@@ -8,7 +8,8 @@ use std::fs::File;
 use rson::ser::pretty::to_string;
 
 #[derive(Serialize)]
-struct Config {
+struct Config
+{
     boolean: bool,
     float: f32,
     map: HashMap<u8, char>,
@@ -16,12 +17,14 @@ struct Config {
 }
 
 #[derive(Serialize)]
-struct Nested {
+struct Nested
+{
     a: String,
     b: char,
 }
 
-fn main() {
+fn main()
+{
     use std::io::Write;
     use std::iter::FromIterator;
 

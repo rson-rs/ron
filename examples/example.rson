@@ -1,4 +1,4 @@
-(
+{
     boolean: true,
     float: 8.2,
     map: {
@@ -9,9 +9,9 @@
         5: '2',
         6: '3',
     },
-    nested: Nested(
+    nested: Nested {
         a: "Decode me!",
         b: 'z',
-    ),
+    },
     tuple: (3, 7),
-)
+}

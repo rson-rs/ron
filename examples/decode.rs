@@ -7,7 +7,8 @@ use std::collections::HashMap;
 use rson::de::from_str;
 
 #[derive(Debug, Deserialize)]
-struct Config {
+struct Config
+{
     boolean: bool,
     float: f32,
     map: HashMap<u8, char>,
@@ -16,12 +17,13 @@ struct Config {
 }
 
 #[derive(Debug, Deserialize)]
-struct Nested {
+struct Nested
+{
     a: String,
     b: char,
 }
 
-const CONFIG: &str = "(
+const CONFIG: &str = "{
     boolean: true,
     float: 8.2,
     map: {
@@ -32,14 +34,15 @@ const CONFIG: &str = "(
         5: '2',
         6: '3',
     },
-    nested: Nested(
+    nested: Nested{
         a: \"Decode me!\",
         b: 'z',
-    ),
+    },
     tuple: (3, 7),
-)";
+}";
 
-fn main() {
+fn main()
+{
     let config: Config = match from_str(CONFIG) {
         Ok(x) => x,
         Err(e) => {

@@ -5,28 +5,29 @@ extern crate serde_json;
 use rson::value::Value;
 use serde::ser::Serialize;
 
-fn main() {
+fn main()
+{
     let data = r#"
-        Scene( // class name is optional
+        Scene { // class name is optional
             materials: { // this is a map
-                "metal": (
+                "metal": {
                     reflectivity: 1.0,
-                ),
-                "plastic": (
+                },
+                "plastic": {
                     reflectivity: 0.5,
-                ),
+                },
             },
             entities: [ // this is an array
-                (
+                {
                     name: "hero",
                     material: "metal",
-                ),
-                (
+                },
+                {
                     name: "monster",
                     material: "plastic",
-                ),
+                },
             ],
-        )
+        }
         "#;
 
     let value = Value::from_str(data).expect("Failed to deserialize");
