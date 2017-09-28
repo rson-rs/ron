@@ -20,6 +20,9 @@ RSON is a simple config format which looks similar to Rust syntax.
 ## Syntax example
 
 ```rust,ignore
+/*
+ * The Game object
+ */
 Game {
     title: "Hello, RSON!",
     level: Level { // We could just leave the `Level` out

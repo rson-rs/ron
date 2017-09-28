@@ -49,6 +49,9 @@ Notice these issues:
 ### Same example in RSON
 
 ```rust
+/*
+ * Scene object example
+ */
 Scene { // class name is optional
     materials: { // this is a map
         "metal": {
@@ -59,7 +62,7 @@ Scene { // class name is optional
         },
     },
     entities: [ // this is an array
-        { // this is a class
+        { // this is a object
             name: "hero",
             material: "metal",
         },
@@ -106,7 +109,7 @@ Unlike RSON, the RON format uses `(`..`)` brackets for all *heterogeneous* struc
 and tuples), while preserving the `{`..`}` for maps, and `[`..`]` for *homogeneous* arrays. This
 is non-traditional syntax for classes of both the JSON and the native Rust representation.
 
-### RSON heterogeneous structure syntax
+### RSON heterogeneous structures syntax
 
 Here are the general rules to parse the heterogeneous structures:
 
@@ -139,6 +142,7 @@ Why not TOML?
 Why not RON?
   - non-traditional syntax for classes
   - confuse between class and map syntax
+  - does not support block comments
 
 Why not XXX?
   - if you know a better format, tell me!

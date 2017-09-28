@@ -123,8 +123,12 @@ fn test_comment()
 x: 1.0, // x is just 1
 // There is another comment in the very next line..
 // And y is indeed
-y: 2.0 // 2!
-    }").unwrap());
+/* This is block comment */y: 2.0 // 2!
+/**
+ * This is multiline block comment / z: 3.0
+ * with another block comment /*inside*/
+**/
+    }/* tail").unwrap());
 }
 
 fn err<T>(kind: ParseError, line: usize, col: usize) -> Result<T>

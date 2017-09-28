@@ -1,3 +1,15 @@
+// Line comments which go to the end of the line.
+/* Block comments which go to the closing delimiter. */
+
+/*
+ * This is the block comment. In general, the line comment is
+ * the recommended comment style however the block comment is
+ * extremely useful for temporarily disabling a large chunk of
+ * code. /* Block comments can be /* nested, */ */ so it takes
+ * only a few keystrokes to comment out all the lines in this
+ * RSON file. /*/*/* Try it yourself! */*/*/
+ */
+
 {
     boolean: true,
     float: 8.2,

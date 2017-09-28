@@ -1,12 +1,12 @@
 [package]
 name = "rson"
-version = "0.1.2"
+version = "0.2.0"
 license = "MIT/Apache-2.0"
 keywords = ["parser", "serde", "serialization"]
 authors = [
 	"Dzmitry Malyshau <kvarkus@gmail.com>",
-	"Thomas Schaller <torkleyy@gmail.com>",
 	"Alexander Mescheryakov <freecoder.xx@gmail.com>",
+	"Thomas Schaller <torkleyy@gmail.com>",
 ]
 description = "Rust Object Notation"
 categories = ["encoding"]

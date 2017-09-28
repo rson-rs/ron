@@ -407,7 +407,37 @@ impl<'a> Bytes<'a>
     fn skip_comment(&mut self) -> bool
     {
         if self.consume("//") {
-            let bytes = self.bytes.iter().take_while(|&&b| b != b'\n').count();
+            let bytes = self.bytes.iter().take_while(
+                |&&cur_char| cur_char != b'\n'
+            ).count() + 1;
+
+            let _ = self.advance(bytes);
+
+            true
+        } else if self.consume("/*") {
+            let mut prev_char: u8 = 0;
+            let mut level: u32 = 0;
+
+            let bytes = self.bytes.iter().take_while(
+                |&&cur_char| {
+                    if prev_char == b'*' && cur_char == b'/' {
+                        if level == 0 {
+                            false
+                        } else {
+                            level -= 1;
+                            prev_char = 0;
+                            true
+                        }
+                    } else if prev_char == b'/' && cur_char == b'*' {
+                        level += 1;
+                        prev_char = 0;
+                        true
+                    } else {
+                        prev_char = cur_char;
+                        true
+                    }
+                }
+            ).count() + 1;
 
             let _ = self.advance(bytes);
 
