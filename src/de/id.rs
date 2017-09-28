@@ -2,19 +2,23 @@ use serde::de::{self, Visitor};
 
 use super::{Deserializer, Error, Result};
 
-pub struct IdDeserializer<'a, 'b: 'a> {
+pub struct IdDeserializer<'a, 'b: 'a>
+{
     d: &'a mut Deserializer<'b>,
 }
 
-impl<'a, 'b: 'a> IdDeserializer<'a, 'b> {
-    pub fn new(d: &'a mut Deserializer<'b>) -> Self {
+impl<'a, 'b: 'a> IdDeserializer<'a, 'b>
+{
+    pub fn new(d: &'a mut Deserializer<'b>) -> Self
+    {
         IdDeserializer {
             d
         }
     }
 }
 
-impl<'a, 'b: 'a, 'c> de::Deserializer<'b> for &'c mut IdDeserializer<'a, 'b> {
+impl<'a, 'b: 'a, 'c> de::Deserializer<'b> for &'c mut IdDeserializer<'a, 'b>
+{
     type Error = Error;
 
     fn deserialize_identifier<V>(

@@ -17,21 +17,24 @@ struct TupleStruct(UnitStruct, i8);
 struct Key(u32);
 
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
-enum Enum {
+enum Enum
+{
     Unit,
     Bool(bool),
     Chars(char, String),
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
-struct Struct {
+struct Struct
+{
     tuple: ((), NewType, TupleStruct),
     vec: Vec<Option<UnitStruct>>,
     map: HashMap<Key, Enum>,
 }
 
 #[test]
-fn roundtrip() {
+fn roundtrip()
+{
     let value = Struct {
         tuple: ((), NewType(0.5), TupleStruct(UnitStruct, -5)),
         vec: vec![None, Some(UnitStruct)],

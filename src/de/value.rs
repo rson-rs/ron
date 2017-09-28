@@ -7,14 +7,17 @@ use serde::{Deserialize, Deserializer};
 use de;
 use value::{Number, Value};
 
-impl Value {
+impl Value
+{
     /// Creates a value from a string reference.
-    pub fn from_str(s: &str) -> de::Result<Self> {
+    pub fn from_str(s: &str) -> de::Result<Self>
+    {
         Self::deserialize(&mut super::Deserializer::from_str(s))
     }
 }
 
-impl<'de> Deserialize<'de> for Value {
+impl<'de> Deserialize<'de> for Value
+{
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>
     {
@@ -24,10 +27,12 @@ impl<'de> Deserialize<'de> for Value {
 
 struct ValueVisitor;
 
-impl<'de> Visitor<'de> for ValueVisitor {
+impl<'de> Visitor<'de> for ValueVisitor
+{
     type Value = Value;
 
-    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
         write!(f, "A RSON value")
     }
 
@@ -139,26 +144,31 @@ impl<'de> Visitor<'de> for ValueVisitor {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests
+{
     use super::*;
 
-    fn eval(s: &str) -> Value {
+    fn eval(s: &str) -> Value
+    {
         Value::from_str(s).expect("Failed to parse")
     }
 
     #[test]
-    fn test_none() {
+    fn test_none()
+    {
         assert_eq!(eval("None"), Value::Option(None));
     }
 
     #[test]
-    fn test_some() {
+    fn test_some()
+    {
         assert_eq!(eval("Some(())"), Value::Option(Some(Box::new(Value::Unit))));
         assert_eq!(eval("Some  (  () )"), Value::Option(Some(Box::new(Value::Unit))));
     }
 
     #[test]
-    fn test_complex() {
+    fn test_complex()
+    {
         assert_eq!(eval("Some([
     Room { width: 20, height: 5, name: \"The Room\" },
 

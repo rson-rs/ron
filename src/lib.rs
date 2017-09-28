@@ -20,28 +20,28 @@ RSON is a simple config format which looks similar to Rust syntax.
 ## Syntax example
 
 ```rust,ignore
-Game(
+Game {
     title: "Hello, RSON!",
-    level: Level( // We could just leave the `Level` out
+    level: Level { // We could just leave the `Level` out
         buildings: [
-            (
+            {
                 size: (10, 20),
                 color: Yellow, // This as an enum variant
                 owner: None,
-            ),
-            (
+            },
+            {
                 size: (20, 25),
                 color: Custom(0.1, 0.8, 1.0),
                 owner: Some("guy"),
-            ),
+            },
         ],
         characters: {
-            "guy": (
+            "guy": {
                 friendly: true,
-            ),
+            },
         },
-    ),
-)
+    },
+}
 ```
 
 ## Usage

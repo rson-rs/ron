@@ -10,7 +10,8 @@ struct EmptyStruct2 {}
 struct MyStruct { x: f32, y: f32 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
-enum MyEnum {
+enum MyEnum
+{
     A,
     B(bool),
     C(bool, f32),
@@ -18,14 +19,16 @@ enum MyEnum {
 }
 
 #[test]
-fn test_empty_struct() {
+fn test_empty_struct()
+{
     assert_eq!(Ok(EmptyStruct1), from_str("EmptyStruct1"));
     assert_eq!(Ok(EmptyStruct2 {}), from_str("EmptyStruct2 {}"));
 }
 
 
 #[test]
-fn test_struct() {
+fn test_struct()
+{
     let my_struct = MyStruct { x: 4.0, y: 7.0 };
 
     assert_eq!(Ok(my_struct), from_str("MyStruct {x:4,y:7,}"));
@@ -46,13 +49,15 @@ fn test_struct() {
 
 
 #[test]
-fn test_option() {
+fn test_option()
+{
     assert_eq!(Ok(Some(1u8)), from_str("Some(1)"));
     assert_eq!(Ok(None::<u8>), from_str("None"));
 }
 
 #[test]
-fn test_enum() {
+fn test_enum()
+{
     assert_eq!(Ok(MyEnum::A), from_str("A"));
     assert_eq!(Ok(MyEnum::B(true)), from_str("B(true,)"));
     assert_eq!(Ok(MyEnum::C(true, 3.5)), from_str("C(true,3.5,)"));
@@ -60,7 +65,8 @@ fn test_enum() {
 }
 
 #[test]
-fn test_array() {
+fn test_array()
+{
     let empty: [i32; 0] = [];
     assert_eq!(Ok(empty), from_str("()"));
     let empty_array = empty.to_vec();
@@ -71,7 +77,8 @@ fn test_array() {
 }
 
 #[test]
-fn test_map() {
+fn test_map()
+{
     use std::collections::HashMap;
 
     let mut map = HashMap::new();
@@ -85,14 +92,16 @@ fn test_map() {
 }
 
 #[test]
-fn test_string() {
+fn test_string()
+{
     let s: String = from_str("\"String\"").unwrap();
 
     assert_eq!("String", s);
 }
 
 #[test]
-fn test_char() {
+fn test_char()
+{
     assert_eq!(Ok('c'), from_str("'c'"));
 }
 
@@ -102,12 +111,14 @@ fn test_escape_char() {
 }
 
 #[test]
-fn test_escape() {
+fn test_escape()
+{
     assert_eq!("\"Quoted\"", from_str::<String>(r#""\"Quoted\"""#).unwrap());
 }
 
 #[test]
-fn test_comment() {
+fn test_comment()
+{
     assert_eq!(MyStruct { x: 1.0, y: 2.0 }, from_str("{
 x: 1.0, // x is just 1
 // There is another comment in the very next line..
@@ -116,14 +127,16 @@ y: 2.0 // 2!
     }").unwrap());
 }
 
-fn err<T>(kind: ParseError, line: usize, col: usize) -> Result<T> {
+fn err<T>(kind: ParseError, line: usize, col: usize) -> Result<T>
+{
     use parse::Position;
 
     Err(Error::Parser(kind, Position { line, col }))
 }
 
 #[test]
-fn test_err_wrong_value() {
+fn test_err_wrong_value()
+{
     use self::ParseError::*;
     use std::collections::HashMap;
 
@@ -143,16 +156,19 @@ fn test_err_wrong_value() {
 }
 
 #[test]
-fn test_perm_ws() {
+fn test_perm_ws()
+{
     assert_eq!(from_str::<MyStruct>("\nMyStruct  \t { \n x   : 3.5 , \t y\n: 4.5 \n } \t\n"),
                 Ok(MyStruct { x: 3.5, y: 4.5 }));
 }
 
 #[test]
-fn untagged() {
+fn untagged()
+{
     #[derive(Deserialize, Debug, PartialEq)]
     #[serde(untagged)]
-    enum Untagged {
+    enum Untagged
+    {
         U8(u8),
         Bool(bool),
     }

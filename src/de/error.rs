@@ -12,14 +12,16 @@ use parse::Position;
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Error {
+pub enum Error
+{
     IoError(String),
     Message(String),
     Parser(ParseError, Position),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ParseError {
+pub enum ParseError
+{
     Eof,
     ExpectedArray,
     ExpectedArrayEnd,
@@ -52,8 +54,10 @@ pub enum ParseError {
     __NonExhaustive,
 }
 
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl fmt::Display for Error
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
         match *self {
             Error::IoError(ref s) => write!(f, "{}", s),
             Error::Message(ref s) => write!(f, "{}", s),
@@ -62,14 +66,18 @@ impl fmt::Display for Error {
     }
 }
 
-impl de::Error for Error {
-    fn custom<T: fmt::Display>(msg: T) -> Self {
+impl de::Error for Error
+{
+    fn custom<T: fmt::Display>(msg: T) -> Self
+    {
         Error::Message(msg.to_string())
     }
 }
 
-impl StdError for Error {
-    fn description(&self) -> &str {
+impl StdError for Error
+{
+    fn description(&self) -> &str
+    {
         match *self {
             Error::IoError(ref s) => s,
             Error::Message(ref e) => e,
@@ -106,26 +114,34 @@ impl StdError for Error {
     }
 }
 
-impl From<Utf8Error> for ParseError {
-    fn from(e: Utf8Error) -> Self {
+impl From<Utf8Error> for ParseError
+{
+    fn from(e: Utf8Error) -> Self
+    {
         ParseError::Utf8Error(e)
     }
 }
 
-impl From<FromUtf8Error> for ParseError {
-    fn from(e: FromUtf8Error) -> Self {
+impl From<FromUtf8Error> for ParseError
+{
+    fn from(e: FromUtf8Error) -> Self
+    {
         ParseError::Utf8Error(e.utf8_error())
     }
 }
 
-impl From<Utf8Error> for Error {
-    fn from(e: Utf8Error) -> Self {
+impl From<Utf8Error> for Error
+{
+    fn from(e: Utf8Error) -> Self
+    {
         Error::Parser(ParseError::Utf8Error(e), Position { line : 0, col : 0})
     }
 }
 
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Self {
+impl From<io::Error> for Error
+{
+    fn from(e: io::Error) -> Self
+    {
         Error::IoError(e.description().to_string())
     }
 }
