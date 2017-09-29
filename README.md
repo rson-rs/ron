@@ -62,7 +62,7 @@ Scene { // class name is optional
         },
     },
     entities: [ // this is an array
-        { // this is a object
+        { // this is an object
             name: "hero",
             material: "metal",
         },
