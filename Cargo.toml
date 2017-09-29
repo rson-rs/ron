@@ -1,6 +1,6 @@
 [package]
-name = "rson"
-version = "0.2.0"
+name = "rson_rs"
+version = "0.2.1"
 license = "MIT/Apache-2.0"
 keywords = ["parser", "serde", "serialization"]
 authors = [
@@ -12,7 +12,7 @@ description = "Rust Object Notation"
 categories = ["encoding"]
 homepage = "https://github.com/rson-rs/rson"
 repository = "https://github.com/rson-rs/rson"
-documentation = "https://docs.rs/rson/"
+documentation = "https://docs.rs/rson_rs/"
 exclude = ["bors.toml", ".travis.yml"]
 
 [lib]
