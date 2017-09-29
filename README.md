@@ -78,7 +78,7 @@ The RSON format uses `{`..`}` brackets for *heterogeneous* structures (classes) 
 *homogeneous* maps, where classes are different from maps by keys: in classes those
 are identifiers, but in maps those are values. Additionally, it uses `(`..`)` brackets
 for heterogeneous tuples, and `[`..`]` for homogeneous arrays. This distinction allows
-to solve the biggest problem with JSON.
+us to solve the biggest problem with JSON.
 
 ### Same example in RON
 
