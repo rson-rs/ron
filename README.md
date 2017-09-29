@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/rson-rs/rson.png?branch=master)](https://travis-ci.org/rson-rs/rson)
 [![Crates.io](https://img.shields.io/crates/v/rson.svg)](https://crates.io/crates/rson_rs)
-[![Docs](https://docs.rs/rson/badge.svg)](https://docs.rs/rson)
+[![Docs](https://docs.rs/rson/badge.svg)](https://docs.rs/rson_rs)
 [![Gitter](https://badges.gitter.im/rson-rs/rson.svg)](https://gitter.im/rson-rs/rson)
 
 RSON is a simple readable data serialization format that looks similar to Rust syntax.

@@ -4,6 +4,4 @@ rust:
   - nightly
 branches:
   only:
-    - staging
-    - trying
     - master
