@@ -100,6 +100,13 @@ fn test_string()
 }
 
 #[test]
+fn test_raw_string()
+{
+    let s: String = from_str(r###"r##"String"##"###).unwrap();
+    assert_eq!("String", s);
+}
+
+#[test]
 fn test_char()
 {
     assert_eq!(Ok('c'), from_str("'c'"));
