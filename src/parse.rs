@@ -358,7 +358,7 @@ impl<'a> Bytes<'a>
         let mut n = 0;
         for _ in 0..4 {
             n = match self.eat_byte()? {
-                c @ b'0' ... b'9' => n * 16_u16 + ((c as u16) - (b'0' as u16)),
+                c @ b'0' ..= b'9' => n * 16_u16 + ((c as u16) - (b'0' as u16)),
                 b'a' | b'A' => n * 16_u16 + 10_u16,
                 b'b' | b'B' => n * 16_u16 + 11_u16,
                 b'c' | b'C' => n * 16_u16 + 12_u16,
@@ -388,11 +388,11 @@ impl<'a> Bytes<'a>
             b't' => store.push(b'\t'),
             b'u' => {
                 let c: char = match self.decode_hex_escape()? {
-                    0xDC00 ... 0xDFFF => {
+                    0xDC00 ..= 0xDFFF => {
                         return self.err(ParseError::InvalidEscape);
                     }
 
-                    n1 @ 0xD800 ... 0xDBFF => {
+                    n1 @ 0xD800 ..= 0xDBFF => {
                         if self.eat_byte()? != b'\\' {
                             return self.err(ParseError::InvalidEscape);
                         }

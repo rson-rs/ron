@@ -120,7 +120,7 @@ impl<'de, 'a> SerdeDeserializer<'de> for &'a mut Deserializer<'de>
             b'{' => self.deserialize_map(visitor),
             b'(' => self.deserialize_tuple(0, visitor),
             b'[' => self.deserialize_seq(visitor),
-            b'0' ... b'9' | b'+' | b'-' | b'.' => self.deserialize_f64(visitor),
+            b'0' ..= b'9' | b'+' | b'-' | b'.' => self.deserialize_f64(visitor),
             b'"' => self.deserialize_string(visitor),
             b'\'' => self.deserialize_char(visitor),
             other => self.bytes.err(ParseError::UnexpectedByte(other as char)),
