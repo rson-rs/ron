@@ -73,7 +73,7 @@ fn test_array()
     assert_eq!(Ok(empty_array), from_str("[]"));
 
     assert_eq!(Ok([2, 3, 4i32]), from_str("(2,3,4,)"));
-    assert_eq!(Ok(([2, 3, 4i32].to_vec())), from_str("[2,3,4,]"));
+    assert_eq!(Ok([2, 3, 4i32].to_vec()), from_str("[2,3,4,]"));
 }
 
 #[test]
@@ -96,6 +96,13 @@ fn test_string()
 {
     let s: String = from_str("\"String\"").unwrap();
 
+    assert_eq!("String", s);
+}
+
+#[test]
+fn test_raw_string()
+{
+    let s: String = from_str(r###"r##"String"##"###).unwrap();
     assert_eq!("String", s);
 }
 

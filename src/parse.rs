@@ -251,10 +251,17 @@ impl<'a> Bytes<'a>
 
     pub fn string(&mut self) -> Result<ParsedStr>
     {
-        if !self.consume("\"") {
-            return self.err(ParseError::ExpectedString);
+        if self.consume("\"") {
+            self.escaped_string()
+        } else if self.consume("r") {
+            self.raw_string()
+        } else {
+            self.err(ParseError::ExpectedString)
         }
+    }
 
+    fn escaped_string(&mut self) -> Result<ParsedStr>
+    {
         let (i, end_or_escape) = (0..)
             .flat_map(|i| self.bytes.get(i))
             .enumerate()
@@ -290,12 +297,40 @@ impl<'a> Bytes<'a>
                 if *end_or_escape == b'"' {
                     let _ = self.advance(i + 1);
 
-                    break Ok(ParsedStr::Allocated(String::from_utf8(s)
-                        .map_err(|e| self.error(e.into()))?));
+                    break Ok(ParsedStr::Allocated(
+                        String::from_utf8(s).map_err(|e| self.error(e.into()))?,
+                    ));
                 }
             }
         }
     }
+
+    fn raw_string(&mut self) -> Result<ParsedStr>
+    {
+        let num_hashes = self.bytes.iter().take_while(|&&b| b == b'#').count();
+        let hashes = &self.bytes[..num_hashes];
+        let _ = self.advance(num_hashes);
+
+        if !self.consume("\"") {
+            return self.err(ParseError::ExpectedString);
+        }
+
+        let ending = [&[b'"'], hashes].concat();
+        let i = self
+            .bytes
+            .windows(num_hashes + 1)
+            .position(|window| window == ending.as_slice())
+            .ok_or_else(|| self.error(ParseError::ExpectedStringEnd))?;
+
+        let s = from_utf8(&self.bytes[..i]).map_err(|e| self.error(e.into()))?;
+
+        // Advance by the number of bytes of the string
+        // + `num_hashes` + 1 for `"`.
+        let _ = self.advance(i + num_hashes + 1);
+
+        Ok(ParsedStr::Slice(s))
+    }
+
 
     fn test_for(&self, s: &str) -> bool
     {
@@ -323,7 +358,7 @@ impl<'a> Bytes<'a>
         let mut n = 0;
         for _ in 0..4 {
             n = match self.eat_byte()? {
-                c @ b'0' ... b'9' => n * 16_u16 + ((c as u16) - (b'0' as u16)),
+                c @ b'0' ..= b'9' => n * 16_u16 + ((c as u16) - (b'0' as u16)),
                 b'a' | b'A' => n * 16_u16 + 10_u16,
                 b'b' | b'B' => n * 16_u16 + 11_u16,
                 b'c' | b'C' => n * 16_u16 + 12_u16,
@@ -353,11 +388,11 @@ impl<'a> Bytes<'a>
             b't' => store.push(b'\t'),
             b'u' => {
                 let c: char = match self.decode_hex_escape()? {
-                    0xDC00 ... 0xDFFF => {
+                    0xDC00 ..= 0xDFFF => {
                         return self.err(ParseError::InvalidEscape);
                     }
 
-                    n1 @ 0xD800 ... 0xDBFF => {
+                    n1 @ 0xD800 ..= 0xDBFF => {
                         if self.eat_byte()? != b'\\' {
                             return self.err(ParseError::InvalidEscape);
                         }
